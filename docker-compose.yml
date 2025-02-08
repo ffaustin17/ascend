@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+    mysql:
+      image: mysql:8.0
+      container_name: game-mysql
+      restart: always
+      environment:
+        MYSQL_DATABASE: student_space
+        MYSQL_USER: owenk
+        MYSQL_PASSWORD: YES
+        MYSQL_ROOT_PASSWORD: rootpassword
+      ports:
+        - "3307:3306"
+      volumes:
+        - mysql_data:/var/lib/mysql
+      healthcheck:   # ✅ This makes sure MySQL is fully ready before the server starts
+        test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+        interval: 10s
+        timeout: 5s
+        retries: 5
+
+
+    server:
+      build:
+        context: .
+        dockerfile: dockerfile.server
+      container_name: game-server
+      restart: always
+      depends_on:
+        mysql:
+          condition: service_healthy   # ✅ Make sure MySQL is ready before starting the server
+      ports:
+        - "12345:12345"
+      environment:
+        DB_HOST: mysql
+        DB_PORT: 3306
+        DB_USER: owenk
+        DB_PASSWORD: YES
+
+volumes:
+  mysql_data:

@@ -1,0 +1,24 @@
+# Use OpenJDK as the base image
+FROM openjdk:21-jdk-slim
+
+# Set the working directory inside the container
+WORKDIR /app
+
+# Copy the necessary files
+COPY ServerSide /app/ServerSide
+COPY ClientSide /app/ClientSide
+COPY CoreGame /app/CoreGame
+COPY resources/db.properties /app/resources/db.properties
+COPY resources/gameServer.sql /app/resources/gameServer.sql
+COPY assets /app/assets
+COPY ocsf.jar /app/ocsf.jar
+COPY mysql-connector-j-9.1.0.jar /app/mysql-connector-j-9.1.0.jar
+
+# Compile the GameServer.java file
+RUN javac -cp .:ocsf.jar:mysql-connector-j-9.1.0.jar /app/CoreGame/*.java /app/ClientSide/*.java /app/ServerSide/*.java
+
+# Expose the server port for clients
+EXPOSE 12345
+
+# Start the game server
+CMD ["java", "-cp", ".:ocsf.jar:mysql-connector-j-9.1.0.jar", "ServerSide.GameServer"]
